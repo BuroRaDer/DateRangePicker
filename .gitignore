@@ -1,0 +1,4 @@
+# Ignore paths used by tools
+.idea
+[tT]humbs.db
+desktop.ini

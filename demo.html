@@ -1,0 +1,71 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Date Range Picker</title>
+  <script type="text/javascript" src="//code.jquery.com/jquery-1.9.1.js"></script>
+  <script type="text/javascript" src="//code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <link rel="stylesheet" type="text/css" href="//code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css">
+
+  <script type="text/javascript" src="BuroRaDer.DateRangePicker.js"></script>
+  <link rel="stylesheet" type="text/css" href="BuroRaDer.DateRangePicker.css">
+
+  <script type="text/javascript">
+    $(function() {
+      $("#pickup").datepicker({
+        dateFormat: 'yy-mm-dd',
+        minDate: 0,
+        maxDate: '+12M'
+      });
+      $("#arrival").datepicker({
+        dateFormat: 'yy-mm-dd',
+        minDate: 0,
+        maxDate: '+12M',
+        showSplitDay: true,
+        isTo1: true,
+        minRangeDuration: 2,
+        doneText: "Ready to book",
+        clearText: "Oh no, I want to select another period"
+      });
+      $("#single").datepicker({
+        dateFormat: 'yy-mm-dd'
+      });
+      $("#pickup, #arrival, #single").click(function() {
+        $(this).focus();
+      });
+      $("#return, #departure").bind("click focus", function() {
+        $($(this).data("date-range-start")).click();
+      });
+    });
+  </script>
+</head>
+<body>
+<h1>Date Range Picker Demo</h1>
+<p>This page demonstrates how the date range picker extends the jQuery date
+picker but still allowing normal usage of it on the same page.</p>
+<h2>Date range selection for rental</h2>
+<p>
+  Select your pickup and return date:<br>
+  <label for="pickup">Pickup date:</label>
+  <input type="text" id="pickup" data-date-range-end="#return">
+  <label for="return">Return date:</label>
+  <input type="text" id="return" data-date-range-start="#pickup">
+</p>
+<h2>Date range selection for accommodation</h2>
+<p>
+  Select your arrival and departure date, we have a minimum stay of 2 nights:<br>
+  <label for="arrival">Arrival date:</label>
+  <input type="text" id="arrival" data-date-range-end="#departure">
+  <label for="departure">Departure date:</label>
+  <input type="text" id="departure" data-date-range-start="#arrival">
+</p>
+<h2>Normal date picker</h2>
+<p>
+  Select a single date:<br>
+  <label for="single">Date</label>
+  <input type="text" id="single">
+</p>
+
+<div class="datepicker"></div>
+
+</body>
+</html>

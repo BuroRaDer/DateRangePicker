@@ -1,0 +1,76 @@
+/**
+ * @file
+ * This file contains styling for the BuroRaDer.DateRangePicker extension plugin
+ * that turns the jQuery UI datepicker into a date range picker.
+ */
+
+/*
+ * Do not fade the color of the selected date range on non selectable elements.
+ */
+.date-range-start.ui-state-disabled,
+.date-range-in.ui-state-disabled {
+  opacity: initial;
+}
+
+/*
+ * But do fade the text. Unfortunately we had to copy the RGB part value of the
+ * color as well, making it "fail" when another color was defined as text color.
+ */
+.date-range-start.ui-state-disabled > .ui-state-active,
+.date-range-start.ui-state-disabled > .ui-state-default,
+.date-range-in.ui-state-disabled > .ui-state-active,
+.date-range-in.ui-state-disabled > .ui-state-default {
+  color: rgba(85, 85, 85, 0.35);
+}
+
+.date-range-start > .ui-state-active,
+.date-range-start > .ui-state-default,
+.date-range-in > .ui-state-active,
+.date-range-in > .ui-state-default,
+.date-range-end > .ui-state-active,
+.date-range-end > .ui-state-default {
+  background: lightgreen none;
+}
+
+/*
+ * Split day settings.
+ */
+.date-range-split-day .date-range-start,
+.date-range-split-day .date-range-end {
+  background-color: #e6e6e6;
+}
+
+.date-range-split-day .date-range-start > .ui-state-active,
+.date-range-split-day .date-range-start > .ui-state-default {
+  background: linear-gradient(to bottom right, transparent, transparent 50%, lightgreen 50%, lightgreen); /* LTR */
+}
+
+.date-range-split-day .date-range-end > .ui-state-active,
+.date-range-split-day .date-range-end > .ui-state-default {
+  background: linear-gradient(to top left, transparent, transparent 50%, lightgreen 50%, lightgreen); /* LTR */
+}
+
+/*
+ * Split day settings for a RTL text direction.
+ *
+ * This plugin assumes that this is explicitly specified on a container element,
+ * e.g. the html or body element. It will fail when a lower element reverses the
+ * direction.
+ */
+[dir=rtl] .date-range-split-day .date-range-start > .ui-state-active,
+[dir=rtl] .date-range-split-day .date-range-start > .ui-state-default {
+  background: linear-gradient(to bottom left, transparent, transparent 50%, lightgreen 50%, lightgreen); /* RTL */
+}
+
+[dir=rtl] .date-range-split-day .date-range-end > .ui-state-active,
+[dir=rtl] .date-range-split-day .date-range-end > .ui-state-default {
+  background: linear-gradient(to top right, transparent, transparent 50%, lightgreen 50%, lightgreen); /* RTL */
+}
+
+/*
+ * Buttons
+ */
+#ui-datepicker-div > button {
+  float: right;
+  margin-left: 0.5em;
+}
