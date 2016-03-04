@@ -15,7 +15,7 @@
    *   _formatDate: function
    *  }}
    */
-  BuroRaDer.DatePicker;
+  window.BuroRaDer.DatePicker; // jshint ignore:line
 
   /**
    * @constructor
@@ -37,10 +37,10 @@
    *   for the start date, 1 for the end date. they should be linked - and
    *   therefore recognizable as a date range couple - to each other via the
    *   data attributes:
-   *   * data-date-range-end: attribute on the 1st input, specifying the id of
-   *     the 2nd input.
-   *   * data-date-range-start: attribute on the 2nd input, specifying the id of
-   *     the 1st input.
+   *   * data-date-range-end: attribute on the 1st input, specifying the
+   *     selector of the 2nd input.
+   *   * data-date-range-start: attribute on the 2nd input, specifying the
+   *     selector of the 1st input.
    * - Only 1 datepicker should be instantiated on 1 of the 2 inputs, the start
    *   input being the most logical one.
    * - When the datepicker gets shown:
@@ -102,7 +102,7 @@
    * - {HTMLInputElement} inputEnd: the input to receive the value for the 2nd
    *     date.
    */
-  BuroRaDer.DateRangePicker = {
+  window.BuroRaDer.DateRangePicker = {
 
     /**
      * Overrides _attachDatepicker to add date range specific settings and
@@ -118,16 +118,17 @@
     _attachDatepicker: function (target, settings) {
       // If this input is part of a date range couple we turn the date picker
       // instance into a date range picker.
-      if ($(target).data("date-range-end") || $(target).data("date-range-start")) {
+      var isDateRange = $(target).data("date-range-end") || $(target).data("date-range-start");
+      if (isDateRange) {
         // Extend the settings with date range specific settings and defaults.
-        settings = $.extend({}, BuroRaDer.DateRangePickerSettings, settings || {});
+        settings = $.extend({}, window.BuroRaDer.DateRangePickerSettings, settings || {});
       }
       // Call parent.
       Object.getPrototypeOf(this)._attachDatepicker.call(this, target, settings);
 
       // The instance object has been created, including its settings property,
       // so we can finish our construction work.
-      if ($(target).data("date-range-end") || $(target).data("date-range-start")) {
+      if (isDateRange) {
         var inst = this._getInst(target);
         inst.orgMinDate = this._get(inst, "minDate");
       }
@@ -405,13 +406,13 @@
      * - Redraw the datepicker to visually indicate the date range.
      *
      * @param {String} id
-     * @param {String} dateStr
+     * @param {?String} dateStr
      */
     _selectDate: function (id, dateStr) {
       var inst = this.isDateRangePicker(id);
       if (inst !== null) {
         var format = this._get(inst, "dateFormat");
-        dateStr = (dateStr != null ? dateStr : this._formatDate(inst));
+        dateStr = (dateStr !== null ? dateStr : this._formatDate(inst));
         var date = this.parseDate(format, dateStr);
 
         if (date !== null) {
@@ -504,19 +505,19 @@
   /**
    * Settings that overrule or extend the default settings of the datepicker.
    */
-  BuroRaDer.DateRangePickerSettings = {
+  window.BuroRaDer.DateRangePickerSettings = {
     numberOfMonths: 2,
     changeMonth: true,
     changeYear: true,
     minRangeDuration: 0,
     isTo1: false,
     showSplitDay: false,
-    beforeShowDay: BuroRaDer.DateRangePicker.beforeShowDay,
+    beforeShowDay: window.BuroRaDer.DateRangePicker.beforeShowDay,
     doneText: "Done",
     clearText: "Clear selected date(s)"
   };
 
   // Extend the singleton datepicker instance with the methods defined above.
-  $.extend($.datepicker, BuroRaDer.DateRangePicker);
+  $.extend($.datepicker, window.BuroRaDer.DateRangePicker);
 
 }(jQuery));

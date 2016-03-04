@@ -27,13 +27,13 @@
 .date-range-start > .ui-state-default,
 .date-range-in > .ui-state-active,
 .date-range-in > .ui-state-default,
-.date-range-end > .ui-state-active,
-.date-range-end > .ui-state-default {
+.date-range-is-to .date-range-end > .ui-state-active,
+.date-range-is-to .date-range-end > .ui-state-default {
   background: lightgreen none;
 }
 
 /*
- * Split day settings.
+ * Split day settings (for a LTR txt direction).
  */
 .date-range-split-day .date-range-start,
 .date-range-split-day .date-range-end {
