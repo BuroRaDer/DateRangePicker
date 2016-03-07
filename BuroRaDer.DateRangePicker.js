@@ -4,25 +4,7 @@
   // Ensure BuroRaDer is defined.
   window.BuroRaDer = window.BuroRaDer || {};
 
-  /** @typedef {{_get: function,
-   *    _getInst: function,
-   *   _hideDatepicker: function,
-   *   _updateDatepicker: function,
-   *   _updateAlternate: function,
-   *   getFormatConfig: function,
-   *   parseDate: function,
-   *   formatDate: function,
-   *   _formatDate: function
-   *  }}
-   */
-  window.BuroRaDer.DatePicker; // jshint ignore:line
-
   /**
-   * @constructor
-   * @extends {BuroRaDer.DatePicker}
-   *
-   * lends {DateRangePicker}
-   *
    * This code turns the jquery UI date picker into a date range picker to allow
    * to use it to select a date range. It does so by overriding some of the
    * methods, adding some settings, changing the defaults of some settings
@@ -68,9 +50,11 @@
    *     gets activated, not when it is active.
    *
    * New settings/defaults:
-   * - numberOfMonths: 2 (new default).
-   * - changeMonth: true (new default).
-   * - changeYear: true (new default).
+   * - numberOfMonths: 2 (new default). Any range a user might want to select
+   *   might cover 2 months (except a 1 day range selection, but that is an edge
+   *   case), to be visually visible you want to display at least 2 months. If
+   *   your use case calls for even longer ranges you might even want to
+   *   increase this setting further.
    * - minRangeDuration: 0 (new setting: positive integer) How many days at
    *     least must the end date be after the start date. 0: same date may be
    *     selected as both start and end date.
@@ -273,7 +257,7 @@
     },
 
     /**
-     * Override to clear a date.
+     * Override to clear the date(s).
      *
      * This override:
      * - Clears both dates.
@@ -288,19 +272,13 @@
       var inst = this.isDateRangePicker(input);
 
       if (inst !== null) {
-        inst.rangeStart = null;
-        $(inst.inputStart).val("");
-
-        inst.rangeEnd = null;
-        $(inst.inputEnd).val("");
-
-        // Reset minDate.
-        inst.settings.minDate = inst.orgMinDate;
-
         // Reset selectedDate.
         inst.currentDay = null;
         inst.selectedMonth = null;
         inst.selectedYear = null;
+
+        this.selectStartDate(inst, "");
+        this.selectEndDate(inst, "");
       }
 
       Object.getPrototypeOf(this)._clearDate.call(this, input);
@@ -318,22 +296,62 @@
 
       inst = this.isDateRangePicker(inst);
       if (inst !== null) {
-        var format = this._get(inst, "dateFormat");
-        var settings = this._getFormatConfig(inst);
+        this.selectStartDate(inst, $(inst.inputStart).val());
+        this.selectEndDate(inst, $(inst.inputEnd).val());
+      }
+    },
 
-        try {
-          this.selectStartDate(inst, this.parseDate(format, $(inst.inputStart).val(), settings));
+    /**
+     * Sets 1 of the dates based on the date string passed in.
+     *
+     * - Parse and validate the date string.
+     * - Set the value both in inst.rangeStart/End and the input field.
+     * - Change the minDate setting.
+     * - Trigger the change event.
+     *
+     * @param {Object} inst
+     * @param {string} field
+     * @param {string} dateStr
+     */
+    set1Date: function (inst, field, dateStr) {
+      // Parse the dateStr.
+      var format = this._get(inst, "dateFormat");
+      var settings = this._getFormatConfig(inst);
+      var date;
+      try {
+        date = this.parseDate(format, dateStr, settings);
+        if (!date) {
+          date = null;
         }
-        catch (e) {
-          inst.rangeStart = null;
-        }
+      }
+      catch (e) {
+        date = null;
+      }
 
-        try {
-          this.selectEndDate(inst, this.parseDate(format, $(inst.inputEnd).val(), settings));
+      // Get the current/old value and set the new value both in
+      // inst.rangeStart/End and the input field.
+      var input = $(inst["input" + field]);
+      var oldVal = input.val();
+      inst["range" + field] = date;
+      input.val(dateStr);
+
+      // minDate handling, only for start date.
+      if (field === "Start") {
+        if (date) {
+          // Disable dates before the selected date and less than minRangeDuration
+          // days after the selected date.
+          var minRangeEnd = new Date(date);
+          minRangeEnd.setDate(minRangeEnd.getDate() + this._get(inst, "minRangeDuration"));
+          inst.settings.minDate = $.datepicker.formatDate(format, minRangeEnd);
         }
-        catch (e) {
-          inst.rangeEnd = null;
+        else {
+          inst.settings.minDate = inst.orgMinDate;
         }
+      }
+
+      // Trigger the change event but only if the field did change.
+      if (dateStr !== oldVal) {
+        input.change();
       }
     },
 
@@ -346,29 +364,10 @@
      * - Trigger the change event on the 1st input.
      *
      * @param {Object} inst
-     * @param {?Date} date
+     * @param {string} dateStr
      */
-    selectStartDate: function (inst, date) {
-      if (date) {
-        var format = this._get(inst, "dateFormat");
-
-        // Store 1st date internally.
-        inst.rangeStart = new Date(date.getTime());
-        // Disable dates before the selected date and less than minRangeDuration
-        // days after the selected date.
-        var minRangeEnd = new Date(inst.rangeStart.getTime());
-        minRangeEnd.setDate(minRangeEnd.getDate() + this._get(inst, "minRangeDuration"));
-        inst.settings.minDate = $.datepicker.formatDate(format, minRangeEnd);
-        // Place the date into the 1st input element and trigger its change event.
-        var oldVal = $(inst.inputStart).val();
-        var newVal = $.datepicker.formatDate(format, inst.rangeStart);
-        if (newVal !== oldVal) {
-          $(inst.inputStart).val($.datepicker.formatDate(format, inst.rangeStart)).change();
-        }
-      }
-      else {
-        inst.rangeStart = null;
-      }
+    selectStartDate: function (inst, dateStr) {
+      this.set1Date(inst, "Start", dateStr);
     },
 
     /**
@@ -379,23 +378,10 @@
      * - Trigger the change event on the 2nd input.
      *
      * @param {Object} inst
-     * @param {?Date} date
+     * @param {string} dateStr
      */
-    selectEndDate: function (inst, date) {
-      if (date) {
-        var format = this._get(inst, "dateFormat");
-        // Store 2nd date internally.
-        inst.rangeEnd = new Date(date.getTime());
-        // Place the date into the 2nd input element and trigger its change event.
-        var oldVal = $(inst.inputEnd).val();
-        var newVal = $.datepicker.formatDate(format, inst.rangeEnd);
-        if (newVal !== oldVal) {
-          $(inst.inputEnd).val($.datepicker.formatDate(format, inst.rangeEnd)).change();
-        }
-      }
-      else {
-        inst.rangeEnd = null;
-      }
+    selectEndDate: function (inst, dateStr) {
+      this.set1Date(inst, "End", dateStr);
     },
 
     /**
@@ -411,16 +397,14 @@
     _selectDate: function (id, dateStr) {
       var inst = this.isDateRangePicker(id);
       if (inst !== null) {
-        var format = this._get(inst, "dateFormat");
         dateStr = (dateStr !== null ? dateStr : this._formatDate(inst));
-        var date = this.parseDate(format, dateStr);
 
-        if (date !== null) {
+        if (dateStr) {
           if (inst.rangeStart === null) {
-            this.selectStartDate(inst, date);
+            this.selectStartDate(inst, dateStr);
           }
           else {
-            this.selectEndDate(inst, date);
+            this.selectEndDate(inst, dateStr);
           }
 
           // This is also there in the parent code...
@@ -430,7 +414,8 @@
           // set, also if the range is not complete yet.
           var onSelect = this._get(inst, "onSelect");
           if (onSelect) {
-            onSelect.apply((inst.input ? inst.input[0] : null), [dateStr, inst]);  // trigger custom callback
+            // Trigger custom callback.
+            onSelect.apply((inst.input ? inst.input[0] : null), [dateStr, inst]);
           }
 
           // Redraw.
@@ -507,8 +492,6 @@
    */
   window.BuroRaDer.DateRangePickerSettings = {
     numberOfMonths: 2,
-    changeMonth: true,
-    changeYear: true,
     minRangeDuration: 0,
     isTo1: false,
     showSplitDay: false,

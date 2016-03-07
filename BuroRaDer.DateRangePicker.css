@@ -2,6 +2,9 @@
  * @file
  * This file contains styling for the BuroRaDer.DateRangePicker extension plugin
  * that turns the jQuery UI datepicker into a date range picker.
+ *
+ * It is based to work on top of the standard jQuery UI styling, so yoo probably
+ * want to adapt this to your own situation.
  */
 
 /*
