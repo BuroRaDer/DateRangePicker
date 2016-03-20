@@ -20,8 +20,8 @@ Usage
   
 Customizing
 -----------
-This date range picker adds some new settings and changes some defaults that
-allow you to influecn its behavior. See the documentation (in
+This date range picker adds some new settings (and changes some defaults) that
+allow you to influence its behavior. See the documentation (in
 BuroRaDer.DateRangePicker.js) on the BuroRaDer.DateRangePicker object.
 
 Support

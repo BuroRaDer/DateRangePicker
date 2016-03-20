@@ -93,7 +93,7 @@
      * setting defaults to the settings object.
      *
      * We recognize a date range picker by data attributes:
-     * - data-date-range-end on the start date input element, or
+     * - data-date-range-end on the start date input element, and
      * - data-date-range-start on the end date input element.
      *
      * @param {HTMLInputElement} target
@@ -102,7 +102,7 @@
     _attachDatepicker: function (target, settings) {
       // If this input is part of a date range couple we turn the date picker
       // instance into a date range picker.
-      var isDateRange = $(target).data("date-range-end") || $(target).data("date-range-start");
+      var isDateRange = $(target).attr("data-date-range-end") || $(target).attr("data-date-range-start");
       if (isDateRange) {
         // Extend the settings with date range specific settings and defaults.
         settings = $.extend({}, window.BuroRaDer.DateRangePickerSettings, settings || {});
@@ -124,10 +124,13 @@
      * _newInst gets called by _attachDatepicker() and _dialogDatepicker(),
      * @see BuroRaDer.DateRangePicker._attachDatepicker
      *
-     * @param {HTMLInputElement} target
-     * @param inline
+     * @param {jQuery} target
+     *   The HTMLElement as passed into _attachDatepicker() packed in a jQuery
+     *   object.
+     * @param {boolean} inline
      *
      * @returns {Object}
+     *   The new instance object.
      */
     _newInst: function (target, inline) {
       // Call parent.
@@ -135,20 +138,20 @@
 
       // If this input is part of a date range couple we turn the date picker
       // instance into a date range picker.
-      if ($(target).data("date-range-end") || $(target).data("date-range-start")) {
+      if (target.attr("data-date-range-end") || target.attr("data-date-range-start")) {
         // Extend the new instance with date range specific properties.
         inst.rangeStart = null;
         inst.rangeEnd = null;
-        if ($(target).data("date-range-end")) {
+        if (target.attr("data-date-range-end")) {
           // Target is the input for the start date. Lookup the input for the
-          // end date via a data attribute
+          // end date via a data attribute.
           inst.inputStart = target;
-          inst.inputEnd = $($(target).data("date-range-end"))[0];
+          inst.inputEnd = $(target.attr("data-date-range-end"));
         }
         else {
           // Target is the input for the end date.
           inst.inputEnd = target;
-          inst.inputStart = $($(target).data("date-range-start"))[0];
+          inst.inputStart = $(target.attr("data-date-range-start"));
         }
       }
 
@@ -212,7 +215,7 @@
           id instanceof jQuery ? this._getInst(id[0]) :
             typeof id === "string" ? this._getInst($(id)[0]) :
               id;
-      return (inst && inst.inputStart !== undefined && inst.inputEnd !== undefined) ? inst : null;
+      return (inst && inst.inputStart && inst.inputEnd) ? inst : null;
     },
 
     /**
@@ -237,7 +240,7 @@
           $.datepicker._hideDatepicker();
         });
         clear.click(function () {
-          $.datepicker._clearDate(inst.input);
+          $.datepicker._clearDate(inst.input[0]);
         });
 
         if (this._get(inst, "showSplitDay")) {
@@ -296,8 +299,8 @@
 
       inst = this.isDateRangePicker(inst);
       if (inst !== null) {
-        this.selectStartDate(inst, $(inst.inputStart).val());
-        this.selectEndDate(inst, $(inst.inputEnd).val());
+        this.selectStartDate(inst, inst.inputStart.val());
+        this.selectEndDate(inst, inst.inputEnd.val());
       }
     },
 
@@ -311,6 +314,7 @@
      *
      * @param {Object} inst
      * @param {string} field
+     *   "Start" or "End"
      * @param {string} dateStr
      */
     set1Date: function (inst, field, dateStr) {
@@ -330,7 +334,8 @@
 
       // Get the current/old value and set the new value both in
       // inst.rangeStart/End and the input field.
-      var input = $(inst["input" + field]);
+      /** @type {jQuery} */
+      var input = inst["input" + field];
       var oldVal = input.val();
       inst["range" + field] = date;
       input.val(dateStr);
@@ -350,6 +355,7 @@
       }
 
       // Trigger the change event but only if the field did change.
+      var notEqual = dateStr !== oldVal;
       if (dateStr !== oldVal) {
         input.change();
       }
