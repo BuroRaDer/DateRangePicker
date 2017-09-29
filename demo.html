@@ -26,13 +26,31 @@
         doneText: "Ready to book",
         clearText: "Oh no, I want to select another period"
       });
+      $("#arrival5").datepicker({
+        dateFormat: 'yy-mm-dd',
+        minDate: 0,
+        maxDate: '+12M',
+        showSplitDay: true,
+        isTo1: true,
+        minRangeDuration: 2,
+        doneText: "Ready to book",
+        clearText: "Oh no, I want to select another period"
+      });
       $("#single").datepicker({
         dateFormat: 'yy-mm-dd'
       });
       $("#pickup, #arrival, #single").click(function() {
         $(this).focus();
       });
-      $("#return, #departure").bind("click focus", function() {
+      $("#arrival5").click(function() {
+        $(this).attr("type", "text").focus();
+		$("#departure5").attr("type", "text");
+      });
+      $("#arrival5").focusout(function() {
+        $(this).attr("type", "date");
+		$("#departure5").attr("type", "date");
+      });
+      $("#return, #departure, #departure5").bind("click focus", function() {
         $($(this).data("date-range-start")).click();
       });
     });
@@ -58,11 +76,26 @@ picker but still allowing normal usage of it on the same page.</p>
   <label for="departure">Departure date:</label>
   <input type="text" id="departure" data-date-range-start="#arrival">
 </p>
+<h2>Date range selection for accommodation with htlm5 date fields</h2>
+<p>
+  Select your arrival and departure date, we have a minimum stay of 2 nights:<br>
+  <label for="arrival5">Arrival date:</label>
+  <input type="date" id="arrival5" data-date-range-end="#departure5">
+  <label for="departure5">Departure date:</label>
+  <input type="date" id="departure5" data-date-range-start="#arrival5">
+</p>
 <h2>Normal date picker</h2>
 <p>
   Select a single date:<br>
   <label for="single">Date</label>
   <input type="text" id="single">
+</p>
+
+<h2>HTML 5 native date picker</h2>
+<p>
+  Select a single date:<br>
+  <label for="native">Date</label>
+  <input type="date" id="native">
 </p>
 
 <div class="datepicker"></div>
